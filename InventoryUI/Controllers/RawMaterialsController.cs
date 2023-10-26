@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Headers;
+using System.Net.Http;
 
 namespace InventoryUI.Controllers
 {
@@ -18,10 +20,12 @@ namespace InventoryUI.Controllers
             List<RawMaterialsDtos> response = new List<RawMaterialsDtos>();
             try
             {
+                var accessToken = HttpContext.Session.GetString("JWTToken");
                 var client = httpClientFactory.CreateClient();
 
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 var httpResponseMessage = await client.GetAsync("https://localhost:7167/api/RawMaterials/SPGetAll");
-            
+                
                 httpResponseMessage.EnsureSuccessStatusCode();
 
                 response.AddRange(await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<RawMaterialsDtos>>());
@@ -43,6 +47,7 @@ namespace InventoryUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(AddRawMaterialsViewModel model)
         {
+            var accessToken = HttpContext.Session.GetString("JWTToken");
             var client = httpClientFactory.CreateClient();
 
             var httpRequestMessage = new HttpRequestMessage()
@@ -52,6 +57,7 @@ namespace InventoryUI.Controllers
                 Content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8,"application/json")
             };
 
+         
             var httpResponseMessage = await client.SendAsync(httpRequestMessage);
             httpResponseMessage.EnsureSuccessStatusCode();
 

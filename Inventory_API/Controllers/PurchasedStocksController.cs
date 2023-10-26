@@ -13,6 +13,7 @@ namespace Inventory_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    
     public class PurchasedStocksController : ControllerBase
     {
         private readonly InventoryDbContext dbContext;
@@ -31,9 +32,10 @@ namespace Inventory_API.Controllers
             this.rawMaterialsRepository = rawMaterialsRepository;
         }
 
-        [AllowAnonymous]
+      
         [HttpGet]
         [Route("SPGetAllPurchasedStocks")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAllPurchasedStocks()
         {
             try
@@ -47,8 +49,8 @@ namespace Inventory_API.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] AddPurchasedStocksRequestDto addPurchasedStocksRequestDto)
         {
             var purchasedStocksDomainModel = mapper.Map<PurchasedStocks>(addPurchasedStocksRequestDto);

@@ -13,6 +13,7 @@ namespace Inventory_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+   
     public class MovedStocksController : ControllerBase
     {
         private readonly InventoryDbContext dbContext;
@@ -32,17 +33,19 @@ namespace Inventory_API.Controllers
             this.mapper = mapper;
         }
 
-        [AllowAnonymous]
+  
         [HttpGet]
         [Route("SPGetMovedStocksAll")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> SpGetMovedStocksAll()
         {
             var movedStocksDomainModel = await movedStocksRepository.GetSPMovedStocksAllAsync();
             return Ok(movedStocksDomainModel);
         }
 
-        [AllowAnonymous]
+     
         [HttpPost]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] AddMovedStocksRequestDto addMovedStocksRequestDto )
         {
             var MovedStocksDomainModel = mapper.Map<MovedStocks>(addMovedStocksRequestDto);
