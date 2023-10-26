@@ -1,0 +1,50 @@
+﻿@model IEnumerable<InventoryUI.Models.Dtos.RawMaterialsDtos.RawMaterialsDtos>
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<h1 class="mt-3">Inventory</h1>
+<div class="d-flex justify-content-around">
+    <a class="btn btn-secondary" asp-controller="RawMaterials" asp-action="Add">Add RawMaterials</a>
+    <a class="btn btn-secondary" asp-controller="PurchasedStocks" asp-action="Index">Purchased Stock History</a>
+    <a class="btn btn-secondary" asp-controller="MovedStocks" asp-action="Index">Moved Stock History</a>
+</div>
+<div>
+    <p> </p>
+</div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Raw Material Id</th>
+            <th>Raw Material Name</th>
+            <th>Price</th>
+            <th>Available Stocks</th>
+            <th>Description</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rawMaterial in Model)
+        {
+            <tr>
+                <td>@rawMaterial.RawMaterialId</td>
+                <td>@rawMaterial.RawMaterialName</td>
+                <td>@rawMaterial.Price</td>
+                <td>@rawMaterial.AvailableStocks</td>
+                <td>@rawMaterial.Description</td>
+                <td>
+                    <a asp-controller="RawMaterials" asp-action="Edit" asp-route-id="@rawMaterial.RawMaterialId" class="btn btn-light">Edit/Delete</a>
+                </td>
+                <td>
+                    <a asp-controller="PurchasedStocks" asp-action="Add" asp-route-id="@rawMaterial.RawMaterialId" class="btn btn-light">Buy Stocks</a>
+                </td>
+                <td>
+                    <a asp-controller="MovedStocks" asp-action="Move" asp-route-id="@rawMaterial.RawMaterialId" class="btn btn-light">Move Stocks</a>
+                </td>
+                
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,37 @@
+﻿@model IEnumerable<InventoryUI.Models.Dtos.PurchasedStocksDtos.PurchasedStocksDtos>
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+<h1 class="mt-3">Purchased History</h1>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Purchase Stock Id</th>
+            <th>Raw Material Id</th>
+            <th>Quantity</th>
+            <th>Entry Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var purchasedStocksDtos in Model)
+        {
+            <tr>
+                <td>@purchasedStocksDtos.PurchasedStockId</td>
+                <td>@purchasedStocksDtos.RawMaterialId</td>
+                <td>@purchasedStocksDtos.Quantity</td>
+                <td>@purchasedStocksDtos.EntryDate</td>
+               @*  <td>
+                    <a asp-controller="Regions" asp-action="Edit" asp-route-id="@region.Id" class="btn btn-light">Edit</a>
+                </td>
+                <td>
+                    <a asp-controller="Regions" asp-action="Del" asp-route-id="@region.Id" class="btn btn-danger">Del</a>
+                </td> *@
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="RawMaterials" asp-action="Index"  class="btn btn-light">Back</a>
+

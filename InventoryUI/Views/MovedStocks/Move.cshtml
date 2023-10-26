@@ -1,0 +1,12 @@
+﻿@model InventoryUI.Models.Dtos.MovedStocksDtos.AddMovedStocksViewModel
+
+<h1 class="mt-3">Move Stocks - Production</h1>
+<form method="post">
+    <div class="mt-3">
+        <label class="form-label">Move Stocks Quantity</label>
+        <input type="text" class="form-control" asp-for="Quantity" />
+    </div>
+    <div class="mt-3 d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary">Move</button>
+    </div>
+</form>
