@@ -34,6 +34,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=RawMaterials}/{action=Index}/{id?}");
+    pattern: "{controller=Auth}/{action=LoginUser}/{id?}");
 
 app.Run();

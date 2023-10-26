@@ -1,5 +1,6 @@
 ﻿using InventoryUI.Models.Dtos.PurchasedStocksDtos;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -18,7 +19,14 @@ namespace InventoryUI.Controllers
             List<PurchasedStocksDtos> response = new List<PurchasedStocksDtos>();
             try
             {
+                //AccessToken
+                var accessToken = HttpContext.Session.GetString("JWTToken");
+
                 var client = httpClientFactory.CreateClient();
+
+                //Token Header
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
                 var httpResponseMessage = await client.GetAsync("https://localhost:7167/api/PurchasedStocks/SPGetAllPurchasedStocks");
 
                 httpResponseMessage.EnsureSuccessStatusCode();
@@ -41,6 +49,10 @@ namespace InventoryUI.Controllers
         public async Task<IActionResult> Add(Guid id,AddPurchasedStocksViewModel addPurchasedStocksViewModel)
         {
             addPurchasedStocksViewModel.RawMaterialId = id;
+
+            //Session AccessToken
+            var accessToken = HttpContext.Session.GetString("JWTToken");
+
             var client = httpClientFactory.CreateClient();
             
             var httpRequestMessage = new HttpRequestMessage()
@@ -49,6 +61,9 @@ namespace InventoryUI.Controllers
                 RequestUri = new Uri("https://localhost:7167/api/PurchasedStocks"),
                 Content = new StringContent(JsonSerializer.Serialize(addPurchasedStocksViewModel), Encoding.UTF8, "application/json")
             };
+
+            //Bearer Header 
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var httpResponseMessage = await client.SendAsync(httpRequestMessage);
             httpResponseMessage.EnsureSuccessStatusCode();

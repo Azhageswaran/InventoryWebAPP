@@ -3,6 +3,7 @@ using InventoryUI.Models.Dtos.PurchasedStocksDtos;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text;
+using System.Net.Http.Headers;
 
 namespace InventoryUI.Controllers
 {
@@ -19,7 +20,14 @@ namespace InventoryUI.Controllers
             List<MovedStocksDtos> response = new List<MovedStocksDtos>();
             try
             {
+                //AccessToken
+                var accessToken = HttpContext.Session.GetString("JWTToken");
+
                 var client = httpClientFactory.CreateClient();
+
+                //Token Header
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
                 var httpResponseMessage = await client.GetAsync("https://localhost:7167/api/MovedStocks/SPGetMovedStocksAll");
                 httpResponseMessage.EnsureSuccessStatusCode();
                 response.AddRange(await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovedStocksDtos>>());
@@ -43,6 +51,10 @@ namespace InventoryUI.Controllers
         public async Task<IActionResult> Move(Guid id, AddMovedStocksViewModel addMovedStocksViewModel)
         {
             addMovedStocksViewModel.RawMaterialId = id;
+
+            //Session AccessToken
+            var accessToken = HttpContext.Session.GetString("JWTToken");
+
             var client = httpClientFactory.CreateClient();
 
             var httpRequestMessage = new HttpRequestMessage()
@@ -51,6 +63,9 @@ namespace InventoryUI.Controllers
                 RequestUri = new Uri("https://localhost:7167/api/MovedStocks"),
                 Content = new StringContent(JsonSerializer.Serialize(addMovedStocksViewModel), Encoding.UTF8, "application/json")
             };
+
+            //Bearer Header 
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var httpResponseMessage = await client.SendAsync(httpRequestMessage);
             httpResponseMessage.EnsureSuccessStatusCode();
