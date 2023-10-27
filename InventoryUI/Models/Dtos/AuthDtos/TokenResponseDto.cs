@@ -3,5 +3,6 @@
     public class TokenResponseDto
     {
         public string JwtToken { get; set; }
+        public string Roles { get; set; }
     }
 }

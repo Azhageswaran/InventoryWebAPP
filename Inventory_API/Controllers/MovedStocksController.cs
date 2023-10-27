@@ -39,8 +39,15 @@ namespace Inventory_API.Controllers
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> SpGetMovedStocksAll()
         {
-            var movedStocksDomainModel = await movedStocksRepository.GetSPMovedStocksAllAsync();
-            return Ok(movedStocksDomainModel);
+            try
+            {
+                var movedStocksDomainModel = await movedStocksRepository.GetSPMovedStocksAllAsync();
+                return Ok(movedStocksDomainModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
      
@@ -48,18 +55,25 @@ namespace Inventory_API.Controllers
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] AddMovedStocksRequestDto addMovedStocksRequestDto )
         {
-            var MovedStocksDomainModel = mapper.Map<MovedStocks>(addMovedStocksRequestDto);
-            MovedStocksDomainModel.ExitDate = DateTime.Now;
+            try
+            {
+                var MovedStocksDomainModel = mapper.Map<MovedStocks>(addMovedStocksRequestDto);
+                MovedStocksDomainModel.ExitDate = DateTime.Now;
 
-            var rawMaterials = await rawMaterialsRepository.GetRawMaterialsByID(addMovedStocksRequestDto.RawMaterialId);
-            rawMaterials.AvailableStocks = rawMaterials.AvailableStocks - addMovedStocksRequestDto.Quantity;
+                var rawMaterials = await rawMaterialsRepository.GetRawMaterialsByID(addMovedStocksRequestDto.RawMaterialId);
+                rawMaterials.AvailableStocks = rawMaterials.AvailableStocks - addMovedStocksRequestDto.Quantity;
 
-            MovedStocksDomainModel = await movedStocksRepository.CreateAsync(MovedStocksDomainModel);
+                MovedStocksDomainModel = await movedStocksRepository.CreateAsync(MovedStocksDomainModel);
 
-            var movedStocksResponseDto = mapper.Map<MovedStocksResponseDto>(MovedStocksDomainModel);
-            movedStocksResponseDto.AvailableStocks = rawMaterials.AvailableStocks;
+                var movedStocksResponseDto = mapper.Map<MovedStocksResponseDto>(MovedStocksDomainModel);
+                movedStocksResponseDto.AvailableStocks = rawMaterials.AvailableStocks;
 
-            return Ok(movedStocksResponseDto);
+                return Ok(movedStocksResponseDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
     }

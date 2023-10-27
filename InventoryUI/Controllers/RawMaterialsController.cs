@@ -24,6 +24,8 @@ namespace InventoryUI.Controllers
                 //AccessToken
                 var accessToken = HttpContext.Session.GetString("JWTToken");
 
+                
+
                 var client = httpClientFactory.CreateClient();
 
                 //Token Header
@@ -37,8 +39,7 @@ namespace InventoryUI.Controllers
             }
             catch (Exception ex)
             {
-
-                throw;
+                return BadRequest(ex.Message);
             }
             return View(response);
         }
@@ -52,28 +53,37 @@ namespace InventoryUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(AddRawMaterialsViewModel model)
         {
-            //Session AccessToken
-            var accessToken = HttpContext.Session.GetString("JWTToken");
-
-            var client = httpClientFactory.CreateClient();
-
-            var httpRequestMessage = new HttpRequestMessage()
+            try
             {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://localhost:7167/api/RawMaterials"),
-                Content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json")
-            };
+                //Session AccessToken
+                var accessToken = HttpContext.Session.GetString("JWTToken");
+                var isRoles = HttpContext.Session.GetString("Roles");
 
-            //Token Authorization
-            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                var client = httpClientFactory.CreateClient();
 
-            var httpResponseMessage = await client.SendAsync(httpRequestMessage);
-            httpResponseMessage.EnsureSuccessStatusCode();
+                var httpRequestMessage = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri("https://localhost:7167/api/RawMaterials"),
+                    Content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json")
+                };
 
-            var response = await httpResponseMessage.Content.ReadFromJsonAsync<RawMaterialsDtos>();
-            if(response is not null)
+                //Token Authorization
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var httpResponseMessage = await client.SendAsync(httpRequestMessage);
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+                
+                var response = await httpResponseMessage.Content.ReadFromJsonAsync<RawMaterialsDtos>();
+                if (response is not null)
+                {
+                    return RedirectToAction("Index", "RawMaterials",new { isRoles});
+                }
+            }
+            catch (Exception ex)
             {
-                return RedirectToAction("Index", "RawMaterials");
+                return BadRequest(ex.Message);
             }
 
             return View();
@@ -81,54 +91,6 @@ namespace InventoryUI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
-        {
-            //Session AccessToken
-            var accessToken = HttpContext.Session.GetString("JWTToken");
-
-            var client = httpClientFactory.CreateClient();
-
-            //Token In Header
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var response = await client.GetFromJsonAsync<RawMaterialsDtos>($"https://localhost:7167/api/RawMaterials/{id.ToString()}");
-            if(response is not null)
-            {
-                return View(response);
-            }
-            return View(null);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Edit(RawMaterialsDtos request)
-        {
-            //Session AccessToken
-            var accessToken = HttpContext.Session.GetString("JWTToken");
-
-            var client = httpClientFactory.CreateClient();
-
-            var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Put,
-                RequestUri = new Uri($"https://localhost:7167/api/RawMaterials/{request.RawMaterialId}"),
-                Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json")
-            };
-
-            //Bearer Header 
-            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var httpResponseMessage = await client.SendAsync(httpRequestMessage);
-            httpResponseMessage.EnsureSuccessStatusCode();
-
-            var response = await httpResponseMessage.Content.ReadFromJsonAsync<RawMaterialsDtos>();
-            if(response is not null)
-            {
-                return RedirectToAction("Index", "RawMaterials");
-            }
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Delete(RawMaterialsDtos request)
         {
             try
             {
@@ -140,11 +102,77 @@ namespace InventoryUI.Controllers
                 //Token In Header
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
+                var response = await client.GetFromJsonAsync<RawMaterialsDtos>($"https://localhost:7167/api/RawMaterials/{id.ToString()}");
+                if (response is not null)
+                {
+                    return View(response);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+
+            return View(null);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(RawMaterialsDtos request)
+        {
+            try
+            {
+                //Session AccessToken
+                var accessToken = HttpContext.Session.GetString("JWTToken");
+                var isRoles = HttpContext.Session.GetString("Roles");
+
+                var client = httpClientFactory.CreateClient();
+
+                var httpRequestMessage = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Put,
+                    RequestUri = new Uri($"https://localhost:7167/api/RawMaterials/{request.RawMaterialId}"),
+                    Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json")
+                };
+
+                //Bearer Header 
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var httpResponseMessage = await client.SendAsync(httpRequestMessage);
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+                var response = await httpResponseMessage.Content.ReadFromJsonAsync<RawMaterialsDtos>();
+                if (response is not null)
+                {
+                    return RedirectToAction("Index", "RawMaterials", new { isRoles });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(RawMaterialsDtos request)
+        {
+            try
+            {
+                //Session AccessToken
+                var accessToken = HttpContext.Session.GetString("JWTToken");
+                var isRoles = HttpContext.Session.GetString("Roles");
+
+                var client = httpClientFactory.CreateClient();
+
+                //Token In Header
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
                 var httpResponseMessage = await client.DeleteAsync($"https://localhost:7167/api/RawMaterials/{request.RawMaterialId}");
 
                 httpResponseMessage.EnsureSuccessStatusCode() ;
 
-                return RedirectToAction("Index", "Regions");
+                return RedirectToAction("Index", "Rawmaterials", new { isRoles });
             }
             catch (Exception ex)
             {

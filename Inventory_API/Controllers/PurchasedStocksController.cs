@@ -53,18 +53,25 @@ namespace Inventory_API.Controllers
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] AddPurchasedStocksRequestDto addPurchasedStocksRequestDto)
         {
-            var purchasedStocksDomainModel = mapper.Map<PurchasedStocks>(addPurchasedStocksRequestDto);
-            purchasedStocksDomainModel.EntryDate = DateTime.Now;
+            try
+            {
+                var purchasedStocksDomainModel = mapper.Map<PurchasedStocks>(addPurchasedStocksRequestDto);
+                purchasedStocksDomainModel.EntryDate = DateTime.Now;
 
-            var rawMaterials = await rawMaterialsRepository.GetRawMaterialsByID(addPurchasedStocksRequestDto.RawMaterialId);
-            rawMaterials.AvailableStocks = rawMaterials.AvailableStocks + addPurchasedStocksRequestDto.Quantity;
+                var rawMaterials = await rawMaterialsRepository.GetRawMaterialsByID(addPurchasedStocksRequestDto.RawMaterialId);
+                rawMaterials.AvailableStocks = rawMaterials.AvailableStocks + addPurchasedStocksRequestDto.Quantity;
 
-            purchasedStocksDomainModel = await purchasedStocksRepository.CreateAsync(purchasedStocksDomainModel); 
+                purchasedStocksDomainModel = await purchasedStocksRepository.CreateAsync(purchasedStocksDomainModel);
 
-            var purchasedStocksResponseDto = mapper.Map<PurchasedStocksResponseDto>(purchasedStocksDomainModel);
-            purchasedStocksResponseDto.AvailableStocks = rawMaterials.AvailableStocks;
+                var purchasedStocksResponseDto = mapper.Map<PurchasedStocksResponseDto>(purchasedStocksDomainModel);
+                purchasedStocksResponseDto.AvailableStocks = rawMaterials.AvailableStocks;
 
-            return Ok(purchasedStocksResponseDto);
+                return Ok(purchasedStocksResponseDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
     }

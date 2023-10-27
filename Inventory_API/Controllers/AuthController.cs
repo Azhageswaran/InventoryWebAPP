@@ -72,7 +72,9 @@ namespace Inventory_API.Controllers
 
                         var response = new LoginResponseDto
                         {
-                            JwtToken = jwtToken
+                            JwtToken = jwtToken,
+                            Roles = roles.First().ToString()
+
                         };
                         return Ok(response);
                     

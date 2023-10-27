@@ -12,7 +12,7 @@ namespace Inventory_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-  
+
     public class RawMaterialsController : ControllerBase
     {
         private readonly InventoryDbContext _context;
@@ -29,14 +29,22 @@ namespace Inventory_API.Controllers
         }
 
         //Get: api/RawMatweials
-        
+
         [HttpGet]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin,Staff")]
         [Route("SPGetAll")]
         public async Task<IActionResult> SPGetAllResults()
         {
-            var rawMaterials = await rawMaterialsRepository.GetSPAllAsync();
-            return Ok(rawMaterials);
+            try
+            {
+                var rawMaterials = await rawMaterialsRepository.GetSPAllAsync();
+                return Ok(rawMaterials);
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
@@ -44,67 +52,95 @@ namespace Inventory_API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetRawMaterialsByID(Guid id)
         {
-            var rawMaterialsDomainModel = await rawMaterialsRepository.GetRawMaterialsByID(id);
-            if (rawMaterialsDomainModel == null)
+            try
             {
-                return NotFound();
-            }
+                var rawMaterialsDomainModel = await rawMaterialsRepository.GetRawMaterialsByID(id);
+                if (rawMaterialsDomainModel == null)
+                {
+                    return NotFound();
+                }
 
-            return Ok(mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel));
+                return Ok(mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel));
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+            
         }
-        
-       
+
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] AddRawMaterialsRequestDto addRawMaterialsRequestDto)
         {
-            var rawMaterialsDomainModel = mapper.Map<RawMaterials>(addRawMaterialsRequestDto);
-            //rawMaterialsDomainModel.RawMaterialId = Guid.NewGuid();
-            rawMaterialsDomainModel.createdOn = DateTime.UtcNow;
+            try
+            {
+                var rawMaterialsDomainModel = mapper.Map<RawMaterials>(addRawMaterialsRequestDto);
+                rawMaterialsDomainModel.createdOn = DateTime.UtcNow;
 
-            rawMaterialsDomainModel = await rawMaterialsRepository.CreateAsync(rawMaterialsDomainModel);
+                rawMaterialsDomainModel = await rawMaterialsRepository.CreateAsync(rawMaterialsDomainModel);
 
-            var rawMaterialResponseDto = mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel);
+                var rawMaterialResponseDto = mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel);
 
-            return Ok(rawMaterialResponseDto);
+                return Ok(rawMaterialResponseDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-      
+
         [HttpPut]
         [Route("{id:Guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateRawMaterials([FromRoute] Guid id, [FromBody] UpdateRawMaterialsRequestDto updateRawMaterialsRequestDto)
         {
-            //DTO to Domain Model
-            var rawMaterialsDomainModel = mapper.Map<RawMaterials>(updateRawMaterialsRequestDto);
-            if (rawMaterialsDomainModel == null)
+            try
             {
-                return NotFound();
+                //DTO to Domain Model
+                var rawMaterialsDomainModel = mapper.Map<RawMaterials>(updateRawMaterialsRequestDto);
+                if (rawMaterialsDomainModel == null)
+                {
+                    return NotFound();
+                }
+
+                rawMaterialsDomainModel = await rawMaterialsRepository.UpdateAsync(id, rawMaterialsDomainModel);
+
+                var rawMaterialResponseDto = mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel);
+
+                return Ok(rawMaterialResponseDto);
             }
+            catch (Exception ex)
+            {
 
-            rawMaterialsDomainModel = await rawMaterialsRepository.UpdateAsync(id, rawMaterialsDomainModel);
-
-            var rawMaterialResponseDto = mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel);
-
-            return Ok(rawMaterialResponseDto);
+                return BadRequest(ex.Message);
+            }
 
         }
 
-     
+
         [HttpDelete]
         [Route("{id:Guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var rawMaterialsDomainModel = await rawMaterialsRepository.DeleteAsync(id);
-            if (rawMaterialsDomainModel == null)
+            try
             {
-                return NotFound();
+                var rawMaterialsDomainModel = await rawMaterialsRepository.DeleteAsync(id);
+                if (rawMaterialsDomainModel == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel));
             }
-
-            return Ok(mapper.Map<RawMaterialResponseDto>(rawMaterialsDomainModel));
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
         }
-
-
     }
 }

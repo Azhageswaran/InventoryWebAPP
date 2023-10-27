@@ -34,7 +34,7 @@ namespace InventoryUI.Controllers
             }
             catch (Exception ex)
             {
-                throw;
+                return BadRequest(ex.Message);
             }
             return View(response);
         }
@@ -48,33 +48,40 @@ namespace InventoryUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(Guid id,AddPurchasedStocksViewModel addPurchasedStocksViewModel)
         {
-            addPurchasedStocksViewModel.RawMaterialId = id;
-
-            //Session AccessToken
-            var accessToken = HttpContext.Session.GetString("JWTToken");
-
-            var client = httpClientFactory.CreateClient();
-            
-            var httpRequestMessage = new HttpRequestMessage()
+            try
             {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://localhost:7167/api/PurchasedStocks"),
-                Content = new StringContent(JsonSerializer.Serialize(addPurchasedStocksViewModel), Encoding.UTF8, "application/json")
-            };
+                addPurchasedStocksViewModel.RawMaterialId = id;
 
-            //Bearer Header 
-            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                //Session AccessToken
+                var accessToken = HttpContext.Session.GetString("JWTToken");
+                var isRoles = HttpContext.Session.GetString("Roles");
 
-            var httpResponseMessage = await client.SendAsync(httpRequestMessage);
-            httpResponseMessage.EnsureSuccessStatusCode();
+                var client = httpClientFactory.CreateClient();
 
-            var response = await httpResponseMessage.Content.ReadFromJsonAsync<PurchasedStocksDtos>();
+                var httpRequestMessage = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri("https://localhost:7167/api/PurchasedStocks"),
+                    Content = new StringContent(JsonSerializer.Serialize(addPurchasedStocksViewModel), Encoding.UTF8, "application/json")
+                };
 
-            if(response is not null)
-            {
-                return RedirectToAction("Index", "RawMaterials");
+                //Bearer Header 
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var httpResponseMessage = await client.SendAsync(httpRequestMessage);
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+                var response = await httpResponseMessage.Content.ReadFromJsonAsync<PurchasedStocksDtos>();
+
+                if (response is not null)
+                {
+                    return RedirectToAction("Index", "RawMaterials", new { isRoles });
+                }
             }
-
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
             return View();
         }
     }
