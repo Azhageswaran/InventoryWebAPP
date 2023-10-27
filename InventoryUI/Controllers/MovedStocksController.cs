@@ -50,31 +50,39 @@ namespace InventoryUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Move(Guid id, AddMovedStocksViewModel addMovedStocksViewModel)
         {
-            addMovedStocksViewModel.RawMaterialId = id;
-
-            //Session AccessToken
-            var accessToken = HttpContext.Session.GetString("JWTToken");
-
-            var client = httpClientFactory.CreateClient();
-
-            var httpRequestMessage = new HttpRequestMessage()
+            try
             {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://localhost:7167/api/MovedStocks"),
-                Content = new StringContent(JsonSerializer.Serialize(addMovedStocksViewModel), Encoding.UTF8, "application/json")
-            };
+                addMovedStocksViewModel.RawMaterialId = id;
 
-            //Bearer Header 
-            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                //Session AccessToken
+                var accessToken = HttpContext.Session.GetString("JWTToken");
+                var isRoles = HttpContext.Session.GetString("Roles");
 
-            var httpResponseMessage = await client.SendAsync(httpRequestMessage);
-            httpResponseMessage.EnsureSuccessStatusCode();
+                var client = httpClientFactory.CreateClient();
 
-            var response = await httpResponseMessage.Content.ReadFromJsonAsync<MovedStocksDtos>();
+                var httpRequestMessage = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri("https://localhost:7167/api/MovedStocks"),
+                    Content = new StringContent(JsonSerializer.Serialize(addMovedStocksViewModel), Encoding.UTF8, "application/json")
+                };
 
-            if (response is not null)
+                //Bearer Header 
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var httpResponseMessage = await client.SendAsync(httpRequestMessage);
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+                var response = await httpResponseMessage.Content.ReadFromJsonAsync<MovedStocksDtos>();
+
+                if (response is not null)
+                {
+                    return RedirectToAction("Index", "RawMaterials", new { isRoles });
+                }
+            }
+            catch (Exception ex)
             {
-                return RedirectToAction("Index", "RawMaterials");
+                return BadRequest(ex.Message);
             }
 
             return View();

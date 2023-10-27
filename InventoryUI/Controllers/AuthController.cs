@@ -28,25 +28,46 @@ namespace InventoryUI.Controllers
         [HttpPost]
         public async Task<IActionResult> LoginUser(LoginRequestDto model)
         {
-            var client = httpClientFactory.CreateClient();
-
-            var httpRequestMessage = new HttpRequestMessage()
+            try
             {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://localhost:7167/api/Auth/Login"),
-                Content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json")
-            };
+                var client = httpClientFactory.CreateClient();
 
-            var httpResponseMessage = await client.SendAsync(httpRequestMessage);
-            httpResponseMessage.EnsureSuccessStatusCode();
+                var httpRequestMessage = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri("https://localhost:7167/api/Auth/Login"),
+                    Content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json")
+                };
 
+                var httpResponseMessage = await client.SendAsync(httpRequestMessage);
+                httpResponseMessage.EnsureSuccessStatusCode();
+
+
+
+                var response = await httpResponseMessage.Content.ReadFromJsonAsync<TokenResponseDto>();
+                HttpContext.Session.SetString("JWTToken", response.JwtToken);
+                HttpContext.Session.SetString("Roles", response.Roles);
+
+                // ViewData["Roles"] = response.Roles;
+                /* TempData["Roles"] = response.Roles;
+
+                 // Check user roles
+                 var isAdmin = User.IsInRole("Admin");
+                 var isStaff = User.IsInRole("Staff");
+ */
+                // var isRoles = (response.Roles == "Admin") ? "Admin" : "Staff";
+                var isRoles = HttpContext.Session.GetString("Roles");
+               
             
 
-            var response = await httpResponseMessage.Content.ReadFromJsonAsync<TokenResponseDto>();
-            HttpContext.Session.SetString("JWTToken", response.JwtToken);
-            if (response is not null)
+                if (response is not null)
+                {
+                      return RedirectToAction("Index", "RawMaterials", new { isRoles});
+                }
+            }
+            catch (Exception ex)
             {
-                return RedirectToAction("Index", "RawMaterials");
+                return BadRequest(ex.Message);
             }
 
             return View();
